@@ -1,0 +1,26 @@
+---
+- hosts: test
+  vars_files:
+    - "group_vars/all"
+  serial: 1
+  become: yes
+  tasks:
+    #- name: run backup backup script
+    #  command: sh /opt/devopscore-bkp.sh
+    - name: pull changes
+      shell: sudo git stash; sudo git pull '{{test.giturl}}' '{{test.branchname}}'
+      args:
+        chdir: '{{test.gitdir}}'
+    - name: Change file ownership, group and permissions
+      command: " find {{ item.include }} -type d {{ item.exclude }} -exec chmod -c 0755 {} \ ; "
+      command: " find {{ item.include }} -type d {{ item.exclude }} -exec chown -c root:root {} \ ; "
+      with_items: "{{ test.updatepermissions }}"
+    - name: Change file ownership, group and permissions
+      file:
+        path: "{{ item }}"
+        owner: root
+        group: root
+        mode: '0777'
+      loop:
+        - /root/Catalog/Dockerfile
+        - /root/Catalog/Jenkinsfile

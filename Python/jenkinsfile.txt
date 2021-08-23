@@ -1,0 +1,37 @@
+pipeline {
+    agent any    
+      tools {
+        maven 'M3'
+        jdk 'JAVA_HOME'
+      }
+    stages('Junit_test'){
+      stage('Git Checkout') {
+        steps {
+          git branch: 'dev',
+            credentialsId: 'telusdevops',
+            url: 'telusdevops@bitbucket.org:telusvideoservices/testrepo.git'
+            sh "ls -lat"
+            }   
+         }
+      stage('build'){
+        steps {
+          sh """echo maven build in progress"""
+          sh 'cd telus-contentplayback-ms/pom.xml'
+          sh  'mvn clean verify '
+           }
+         }
+      stage('test'){ 
+        steps {
+          sh """echo maven Test is in progress"""
+          sh 'cd telus-contentplayback-ms/pom.xml'
+          sh 'mvn clean test '
+           }
+         }  
+      stage('Results') {
+        steps {
+          junit '**/target/surefire-reports/TEST-*.xml'
+          archive 'target/*.jar'
+          }    
+         }
+     }
+}  
